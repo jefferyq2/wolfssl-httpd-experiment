@@ -18,7 +18,7 @@
 #define KEY_FILE  "certs/server.key"
 
 extern int server_socket(int port);
-extern WOLFSSL_CTX *tls_setup(void);
+extern WOLFSSL_CTX *tls_setup(const char *cert_file, const char *key_file);
 extern WOLFSSL *tls_attach(WOLFSSL_CTX *ctx, int connd);
 
 int main() {
@@ -27,7 +27,7 @@ int main() {
     int sockfd = server_socket(DEFAULT_PORT);
 
     wolfSSL_Init();
-    WOLFSSL_CTX *ctx = tls_setup();
+    WOLFSSL_CTX *ctx = tls_setup(CERT_FILE, KEY_FILE);
 
     bool done = ctx == NULL;
     while (!done) {

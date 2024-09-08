@@ -37,7 +37,7 @@ int server_socket(int port) {
     if (bind(server_fd, (struct sockaddr*)&server, sizeof(server)))
         pabort("bind");
 
-    if (listen(server_fd, 5))
+    if (listen(server_fd, 50))
         pabort("listen");
 
     return server_fd;
