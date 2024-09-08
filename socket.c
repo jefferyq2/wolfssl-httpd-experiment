@@ -1,6 +1,3 @@
-#ifndef EXISTING_H
-#define EXISTING_H
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,5 +42,3 @@ int server_socket(int port) {
 
     return server_fd;
 }
-
-#endif

@@ -1,5 +1,3 @@
-#include "existing.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,30 +17,9 @@
 #define CERT_FILE "certs/server.crt"
 #define KEY_FILE  "certs/server.key"
 
-WOLFSSL_CTX *tls_setup(void) {
-    WOLFSSL_CTX *ctx = wolfSSL_CTX_new(wolfTLSv1_3_server_method());
-    if (ctx == NULL) {
-        fprintf(stderr, "ERROR: failed to create WOLFSSL_CTX\n");
-        return NULL;
-    }
-
-    /* Load server certificates into WOLFSSL_CTX */
-    if (wolfSSL_CTX_use_certificate_file(ctx, CERT_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
-                CERT_FILE);
-        return NULL;
-    }
-
-    /* Load server key into WOLFSSL_CTX */
-    if (wolfSSL_CTX_use_PrivateKey_file(ctx, KEY_FILE, WOLFSSL_FILETYPE_PEM) != WOLFSSL_SUCCESS) {
-        fprintf(stderr, "ERROR: failed to load %s, please check the file.\n",
-                KEY_FILE);
-        return NULL;
-    }
-
-    return ctx;
-}
-
+extern int server_socket(int port);
+extern WOLFSSL_CTX *tls_setup(void);
+extern WOLFSSL *tls_attach(WOLFSSL_CTX *ctx, int connd);
 
 int main() {
     const char reply[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 38\r\n\r\n<!doctype html>\r\n<p>hello, world!</p>\n";
@@ -60,23 +37,8 @@ int main() {
             continue;
         }
 
-        // Create new wolfSSL session.
-        WOLFSSL *ssl = wolfSSL_new(ctx);
-        if (ssl == NULL) {
-            fprintf(stderr, "ERROR: failed to create WOLFSSL object\n");
-            close(connd);
-            continue;
-        }
-
-        // Attach wolfSSL session to the socket
-        wolfSSL_set_fd(ssl, connd);
-
-        // Establish TLS connection
-        int err = wolfSSL_accept(ssl);
-        if (err != WOLFSSL_SUCCESS) {
-            fprintf(stderr, "wolfSSL_accept error = %d\n",
-                wolfSSL_get_error(ssl, err));
-            wolfSSL_free(ssl);
+        WOLFSSL *ssl = tls_attach(ctx, connd);
+        if (!ssl) {
             close(connd);
             continue;
         }
